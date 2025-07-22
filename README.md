@@ -51,7 +51,7 @@ Jenkins_Dashboard/
 
 3. **Set up environment variables:**
    ```bash
-   cp env_template.txt .env
+   cp .env.example .env
    # Edit .env with your Jenkins credentials and other configuration as mentioned in CONFIGURATION.md file
    ```
 

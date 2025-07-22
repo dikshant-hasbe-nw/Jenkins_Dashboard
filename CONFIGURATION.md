@@ -211,13 +211,13 @@ This codebase is designed to be easily reused for different Jenkins servers:
 ### Method 1: Separate .env Files
 ```bash
 # For Jenkins Server 1
-cp env_template.txt .env.jenkins1
+cp .env.example .env.jenkins1
 # Edit .env.jenkins1 with server 1 credentials
 DASHBOARD_TITLE=Jenkins Server 1 Dashboard
 JENKINS_BASE_URL=https://jenkins1.company.com/
 
 # For Jenkins Server 2  
-cp env_template.txt .env.jenkins2
+cp .env.example .env.jenkins2
 # Edit .env.jenkins2 with server 2 credentials
 DASHBOARD_TITLE=Jenkins Server 2 Dashboard
 JENKINS_BASE_URL=https://jenkins2.company.com/
