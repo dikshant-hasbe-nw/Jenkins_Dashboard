@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  preferences UserPreference?
+  auditLogs   AuditLog[]
+}
+
+model UserPreference {
+  id           String @id @default(cuid())
+  userId       String @unique
+  theme        String @default("light")
+  timezone     String @default("UTC")
+  refreshRate  Int    @default(300)
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model JenkinsJob {
+  id                      String   @id @default(cuid())
+  name                    String
+  url                     String
+  type                    String
+  folder                  String
+  lastBuildStatus         String?
+  lastBuildUrl            String?
+  isDisabled              Boolean  @default(false)
+  lastBuildDate           DateTime?
+  lastSuccessfulDate      DateTime?
+  lastFailedDate          DateTime?
+  daysSinceLastBuild      Int?
+  totalBuilds             Int      @default(0)
+  successCount            Int      @default(0)
+  failureCount            Int      @default(0)
+  successRate             Float    @default(0)
+  isTestJob               Boolean  @default(false)
+  lastBuildDuration       Int      @default(0)
+  lastSuccessfulDuration  Int      @default(0)
+  lastFailedDuration      Int      @default(0)
+  avgBuildDuration        Float    @default(0)
+  avgSuccessfulDuration   Float    @default(0)
+  avgFailedDuration       Float    @default(0)
+  minBuildDuration        Int      @default(0)
+  maxBuildDuration        Int      @default(0)
+  totalBuildDuration      Int      @default(0)
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  buildHistory BuildHistory[]
+}
+
+model BuildHistory {
+  id          String      @id @default(cuid())
+  jobId       String
+  buildNumber Int
+  status      String
+  duration    Int
+  timestamp   DateTime
+  url         String?
+  createdAt   DateTime    @default(now())
+
+  job JenkinsJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  resource  String
+  details   Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model DashboardWidget {
+  id          String @id @default(cuid())
+  name        String
+  type        String
+  config      Json
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum Role {
+  USER
+  ADMIN
+} 

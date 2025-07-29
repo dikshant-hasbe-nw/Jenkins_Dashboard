@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: jenkins_dashboard_postgres
+    environment:
+      POSTGRES_DB: jenkins_dashboard
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - jenkins_dashboard_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: jenkins_dashboard_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - jenkins_dashboard_network
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: jenkins_dashboard_server
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/jenkins_dashboard
+      - REDIS_URL=redis://redis:6379
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - jenkins_dashboard_network
+    profiles:
+      - production
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: jenkins_dashboard_client
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+    networks:
+      - jenkins_dashboard_network
+    profiles:
+      - production
+
+  nginx:
+    image: nginx:alpine
+    container_name: jenkins_dashboard_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./ssl:/etc/nginx/ssl
+    depends_on:
+      - server
+      - client
+    networks:
+      - jenkins_dashboard_network
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  jenkins_dashboard_network:
+    driver: bridge 
